@@ -104,11 +104,11 @@ tell_me_how_drunk <- function(age, sex = c("male", "female"),
   promille
 }
 
-
 #' show me how drunk, plots per mille alcohol level at 5 mins interval
 #'
 #' @inheritParams tell_me_how_drunk
-#' @import checkmate
+#' @importFrom checkmate assert_posixct
+#' @importFrom ggplot2 qplot
 show_me_how_drunk <- function(age, sex, height,
                               weight, drinking_time, drinks) {
   checkmate::assert_posixct(drinking_time, len = 2, sorted = TRUE)
