@@ -1,16 +1,21 @@
-library(checkmate)
-
-# compute alcohol mass
-# @params: volume(of alcohol), alcohol percentage, alcohol density
-# @return: alcohol mass
+#' compute alcohol mass
+#'
+#' @param volume volume (of alcohol) in ml
+#' @param alcohol_percentage permille amount of alcohol
+#' @param alcohol_density in g/cm3
+#' @return alcohol mass in grams
 compute_alcohol_mass <- function(volume, alcohol_percentage,
                                  alcohol_density = 0.8) {
   volume * alcohol_percentage * alcohol_density
 }
 
-# compute total body water
-# @params: sex, age, height, mass
-# @return: total body water
+#' compute total body water
+#'
+#' @param sex person's sex male or female
+#' @param age person's age in years
+#' @param height person's height in cm
+#' @param mass person's mass in kg
+#' @return total body water (unitless)
 compute_total_body_water <- function(sex, age, height, mass) {
   switch(sex,
     "male" = 2.447 - (0.09516 * age) + (0.1074 * height) + (0.3362 * mass),
@@ -18,25 +23,38 @@ compute_total_body_water <- function(sex, age, height, mass) {
   )
 }
 
-# compute distribution factor
-# @params: total_body_water, mass, blood_density
-# @return: distribution factor
+#' compute distribution factor
+#'
+#' @param total_body_water total body water (unitless)
+#' @param mass in kg
+#' @param blood_density  in g/cm3
+#' @return distribution factor
 compute_distribution_factor <- function(total_body_water,
                                         mass, blood_density = 1.055) {
   blood_density * total_body_water / (0.8 * mass)
 }
 
-# compute alcohol concentration
-# @params: alcohol_mass, distribution_factor, mass
-# @return: alcohol concentration
+#' compute alcohol concentration
+#'
+#' @param alcohol_mass in g
+#' @param distribution_factor whatson distribution factor
+#' @param mass in kg
+#' @return alcohol concentration
 compute_alcohol_concentration <- function(alcohol_mass,
                                           distribution_factor, mass) {
   alcohol_mass / (distribution_factor * mass)
 }
 
-# tell me how drunk
-# @params: age, sex, height, weight, drinking time, and drinks
-# @return: promille
+#' Tell me how drunk
+#'
+#' @param age person's in years
+#' @param sex person's sex (male or female)
+#' @param height person's height in cm
+#' @param weight person's weight in Kg
+#' @param drinking_time drinking time in hours
+#' @param drinks drinks vector e.g., c("schnaps", "wein")
+#' @return promille Per mille blood alcohol value
+#' @import checkmate
 tell_me_how_drunk <- function(age, sex = c("male", "female"),
                               height, weight, drinking_time, drinks) {
 
@@ -44,13 +62,13 @@ tell_me_how_drunk <- function(age, sex = c("male", "female"),
   sex <- tolower(sex)
   sex <- match.arg(sex)
   drinks <- unlist(drinks)
-  assert_choice(sex, c("male", "female"))
-  assert_number(age, lower = 0, finite = TRUE)
-  assert_number(height, lower = 0, finite = TRUE)
-  assert_number(weight, lower = 0, finite = TRUE)
-  assert_posixct(drinking_time, len = 2, sorted = TRUE)
-  assert_numeric(drinks, lower = 0, finite = TRUE)
-  assert_names(names(drinks), subset.of = c(
+  checkmate::assert_choice(sex, c("male", "female"))
+  checkmate::assert_number(age, lower = 0, finite = TRUE)
+  checkmate::assert_number(height, lower = 0, finite = TRUE)
+  checkmate::assert_number(weight, lower = 0, finite = TRUE)
+  checkmate::assert_posixct(drinking_time, len = 2, sorted = TRUE)
+  checkmate::assert_numeric(drinks, lower = 0, finite = TRUE)
+  checkmate::assert_names(names(drinks), subset.of = c(
     "massn", "hoibe",
     "wein", "schnaps"
   ))
@@ -84,4 +102,22 @@ tell_me_how_drunk <- function(age, sex = c("male", "female"),
     promille <- max(0, promille - (drinking_time - 1) * 0.15)
   }
   promille
+}
+
+
+#' show me how drunk, plots per mille alcohol level at 5 mins interval
+#'
+#' @inheritParams tell_me_how_drunk
+#' @import checkmate
+show_me_how_drunk <- function(age, sex, height,
+                              weight, drinking_time, drinks) {
+  checkmate::assert_posixct(drinking_time, len = 2, sorted = TRUE)
+  x <- seq(drinking_time[[1]], drinking_time[[2]], by = "5 mins")
+  y <- sapply(x, function(t) {
+    tell_me_how_drunk(
+      age, sex, height, weight,
+      c(drinking_time[[1]], t), drinks
+    )
+  })
+  ggplot2::qplot(x, y, xlab = "time", ylab = "per mille alcohol level")
 }

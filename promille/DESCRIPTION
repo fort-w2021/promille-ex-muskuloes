@@ -1,0 +1,20 @@
+Package: promille
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R:
+    person(given = "Victor",
+           family = "Tuekam",
+           role = c("aut", "cre"),
+           email = "vic.tuekam@gmail.com")
+Description: Computes the per mill alcohol level.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports:
+    checkmate,
+    ggplot2,
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
